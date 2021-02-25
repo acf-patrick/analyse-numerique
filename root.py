@@ -1,5 +1,6 @@
 #-*- coding:utf-8 -*-
-from math import log, inf
+
+from math import inf
 
 class Solver:
 	"""
@@ -97,15 +98,12 @@ class Lagrange(Bisection):
 class Descartes(Solver):
 	""" Secant method """
 
-	def __init__(self, f, a, b = None, max_iteration = 100, tolerance = 1e-9):
+	def __init__(self, f, a, b, max_iteration = 100, tolerance = 1e-9):
 		"""
 		parameters :
 		 - the function in the equation : f(x) = 0
-		 - two abscissas a and b. If b not given, we put b = a + tolerance
+		 - a, b : two abscissas forming the interval [a; b] where the solution should be
 		"""
-
-		if b == None:
-			b = a + tolerance
 
 		if a > b:
 			a, b = b, a
@@ -122,6 +120,39 @@ class Descartes(Solver):
 				break
 
 			self.progression.append(b - yb*(b - a)/(yb - ya))
+
+		if i == self.max_iteration-1:
+			self._instruction()
+
+		self.approximation = self.progression[-1]
+		return self.approximation
+
+class FixedPoint(Solver):
+	""" Fixed point iterative method """
+
+	def __init__(self, f, x0, max_iteration = 100, tolerance = 1e-9):
+		"""
+		parameters :
+		 - the function in the equation : f(x) = x
+		 - starting point x0
+		"""
+
+		Solver.__init__(self, f, max_iteration, tolerance)
+		self.progression = [x0]
+
+	def compute(self):
+		for i in range(len(self.progression), self.max_iteration):
+			try:
+				x = self.function(self.progression[-1])
+			except ValueError:
+				message = "x = {}, math domain error! The sequence Xn+1 = f(Xn) diverges\n".format(x)
+				message += "Try with another starting point :\n method.progression = [x0]"
+				raise Exception(message)
+
+			if abs(x - self.progression[-1]) < self.epsilon:
+				break
+
+			self.progression.append(x)
 
 		if i == self.max_iteration-1:
 			self._instruction()
