@@ -16,8 +16,10 @@ class Solver:
 
 	def __setattr__(self, name, value):
 		if name == "function":
+			# we have a new equation
 			self.progression = []
 			self.approximation = None
+
 		self.__dict__[name] = value
 
 	def compute(self):

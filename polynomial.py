@@ -19,7 +19,7 @@ class Polynomial:
 		p[k-1] = value
 		
 		- support common operations :
-		addition, substraction, multiplication of to polynomials or with a scalar
+		addition, substraction, multiplication of two polynomials or with a scalar
 		- modifying coefficients will set the degree
 		- decreasing the degree of the polynomial will set the list of coefficients as well
 	'''
@@ -28,6 +28,13 @@ class Polynomial:
 		self._degree = len(coefficients)-1
 		self._coefficient = list(coefficients)
 		self._troncate()
+
+	def __eq__(self, p):
+		if isnum(p):
+			return str(p) == str(self)
+		elif isinstance(p, Polynomial):
+			return self.coefficient == p.coefficient
+		return False
 
 	def __getitem__(self, index):
 		return self._coefficient[index]
@@ -110,6 +117,16 @@ class Polynomial:
 
 		ret._troncate()
 		return ret
+
+	def __rtruediv__(self, p):
+		return self/p
+	def __truediv__(self, p):
+		if isnum(p):
+			if not p:
+				raise ZeroDivisionError
+			return self*(1/p)
+		else:
+			raise TypeError('Can not divide polynomial with {}'.format(t))
 
 	def __rmul__(self, p):
 		return self*p
