@@ -1,11 +1,11 @@
 #-*- coding:utf-8 -*-
 
-from math import inf
+from math import inf, log, ceil
 
 class Solver:
 	"""
 	base class for all methods
-	 - the attribute 'progression' is the sequence 
+	 - the attribute 'progression' is the sequence storing the whole process
 	"""
 	def __init__(self, f, max_iteration, tolerance):
 		self.function = f
@@ -13,6 +13,22 @@ class Solver:
 		self.progression = []
 		self.epsilon = tolerance
 		self.approximation = None
+
+	def __repr__(self):
+		return self.__str__()
+
+	def __str__(self):
+		if self.approximation == None:
+			return type(self).__name__ + " instance"
+
+		e = ".{}f".format(ceil(-log(self.epsilon, 10)))
+		ret = '\t'.join(('i', "xi", "f(xi)", '\n'))
+		for i, x in enumerate(self.progression):
+			m = self._mid(*x)
+			ret += "{}\t{}\t{}\n".format(i, format(x, e), format(self.function(x), e))
+		ret += "Approximated solution: {}\n".format(x)
+
+		return ret
 
 	def __setattr__(self, name, value):
 		if name == "function":
@@ -22,23 +38,24 @@ class Solver:
 
 		self.__dict__[name] = value
 
+	def _instruction(self):
+		print ("maximum iteration has been reached!")
+		print ("if you want to get more precise approximation, increase the max_teration attribute")
+
 	def compute(self):
 		"""
 		calculate the approximation
 		"""
 		return None
 
-	def _instruction(self):
-		print ("maximum iteration has been reached!")
-		print ("if you want to get more precise approximation, increase the max_teration attribute")
-
 	def error(self):
+		"""Error given by the approximation"""
 		return abs(self.function(self.approximation)) if self.approximation != None else inf
 
 class Bisection(Solver):
 	""" Bisection Method """
 
-	def __init__(self, f, a, b, max_iteration = 100, tolerance = 1e-9):
+	def __init__(self, f, a, b, max_iteration = 100, tolerance = 1e-3):
 		"""
 		parameters :
 		 - the function in the equation : f(x) = 0
@@ -53,6 +70,19 @@ class Bisection(Solver):
 
 		Solver.__init__(self, f, max_iteration, tolerance)
 		self.progression = [(a, b)]
+
+	def __str__(self):
+		if self.approximation == None:
+			return type(self).__name__ + " instance"
+
+		e = ".{}f".format(ceil(-log(self.epsilon, 10)))
+		ret = '\t'.join(('i', "ai", "bi", "f(xi)", '\n'))
+		for i, x in enumerate(self.progression):
+			m = self._mid(*x)
+			ret += "{}\t{}\t{}\t{}\n".format(i, format(x[0], e), format(x[1], e), format(self.function(m), e))
+		ret += "Approximated solution: {}\n".format(m)
+
+		return ret
 
 	def _mid(self, a, b):
 		return (a+b)/2
@@ -90,7 +120,7 @@ class Bisection(Solver):
 class Lagrange(Bisection):
 	""" Variant of the bisection method """
 
-	def __init__(self, f, a, b, max_iteration = 100, tolerance = 1e-9):
+	def __init__(self, f, a, b, max_iteration = 100, tolerance = 1e-3):
 		Bisection.__init__(self, f, a, b, max_iteration, tolerance)
 
 	def _mid(self, a, b):
@@ -100,7 +130,7 @@ class Lagrange(Bisection):
 class Descartes(Solver):
 	""" Secant method """
 
-	def __init__(self, f, a, b, max_iteration = 100, tolerance = 1e-9):
+	def __init__(self, f, a, b, max_iteration = 100, tolerance = 1e-3):
 		"""
 		parameters :
 		 - the function in the equation : f(x) = 0
@@ -132,7 +162,7 @@ class Descartes(Solver):
 class FixedPoint(Solver):
 	""" Fixed point iterative method """
 
-	def __init__(self, f, x0, max_iteration = 100, tolerance = 1e-9):
+	def __init__(self, f, x0, max_iteration = 100, tolerance = 1e-3):
 		"""
 		parameters :
 		 - the function in the equation : f(x) = x
@@ -162,10 +192,17 @@ class FixedPoint(Solver):
 		self.approximation = self.progression[-1]
 		return self.approximation
 
+	def error(self):
+		x = self.approximation
+		if x == None:
+			return inf
+
+		return abs(self.function(x) - x)
+
 class Newton(Solver):
 	""" Newton-Raphson method """
 
-	def __init__(self, f, df, x0, max_iteration = 100, tolerance = 1e-9):
+	def __init__(self, f, df, x0, max_iteration = 100, tolerance = 1e-3):
 		"""
 		parameters :
 		 - the function in the equation : f(x) = 0
