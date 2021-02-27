@@ -22,13 +22,13 @@ class Solver:
 			return type(self).__name__ + " instance"
 
 		e = ".{}f".format(ceil(-log(self.epsilon, 10)))
-		ret = '\t'.join(('i', "xi", "f(xi)", '\n'))
+		ret = ''
 		for i, x in enumerate(self.progression):
-			m = self._mid(*x)
 			ret += "{}\t{}\t{}\n".format(i, format(x, e), format(self.function(x), e))
-		ret += "Approximated solution: {}\n".format(x)
+		l = ret.split('\n')[0]
 
-		return ret
+		return "i\txi" + ' '*l[2:].find('\t') + "\tf(xi)\n" +\
+			 '-'*(8+len(l)) + '\n' + ret + "Approximated solution: {}\n".format(x)
 
 	def __setattr__(self, name, value):
 		if name == "function":
@@ -55,7 +55,7 @@ class Solver:
 class Bisection(Solver):
 	""" Bisection Method """
 
-	def __init__(self, f, a, b, max_iteration = 100, tolerance = 1e-3):
+	def __init__(self, f, a, b, max_iteration = 100, tolerance = 1e-9):
 		"""
 		parameters :
 		 - the function in the equation : f(x) = 0
@@ -120,7 +120,7 @@ class Bisection(Solver):
 class Lagrange(Bisection):
 	""" Variant of the bisection method """
 
-	def __init__(self, f, a, b, max_iteration = 100, tolerance = 1e-3):
+	def __init__(self, f, a, b, max_iteration = 100, tolerance = 1e-9):
 		Bisection.__init__(self, f, a, b, max_iteration, tolerance)
 
 	def _mid(self, a, b):
@@ -130,15 +130,12 @@ class Lagrange(Bisection):
 class Descartes(Solver):
 	""" Secant method """
 
-	def __init__(self, f, a, b, max_iteration = 100, tolerance = 1e-3):
+	def __init__(self, f, a, b, max_iteration = 100, tolerance = 1e-9):
 		"""
 		parameters :
 		 - the function in the equation : f(x) = 0
 		 - a, b : two abscissas forming the interval [a; b] where the solution should be
 		"""
-
-		if a > b:
-			a, b = b, a
 
 		Solver.__init__(self, f, max_iteration, tolerance)
 		self.progression = [a, b]
@@ -162,7 +159,7 @@ class Descartes(Solver):
 class FixedPoint(Solver):
 	""" Fixed point iterative method """
 
-	def __init__(self, f, x0, max_iteration = 100, tolerance = 1e-3):
+	def __init__(self, f, x0, max_iteration = 100, tolerance = 1e-9):
 		"""
 		parameters :
 		 - the function in the equation : f(x) = x
@@ -202,7 +199,7 @@ class FixedPoint(Solver):
 class Newton(Solver):
 	""" Newton-Raphson method """
 
-	def __init__(self, f, df, x0, max_iteration = 100, tolerance = 1e-3):
+	def __init__(self, f, df, x0, max_iteration = 100, tolerance = 1e-9):
 		"""
 		parameters :
 		 - the function in the equation : f(x) = 0
