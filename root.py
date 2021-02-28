@@ -22,13 +22,22 @@ class Solver:
 			return type(self).__name__ + " instance"
 
 		e = ".{}f".format(ceil(-log(self.epsilon, 10)))
-		ret = ''
+		body = ""
 		for i, x in enumerate(self.progression):
-			ret += "{}\t{}\t{}\n".format(i, format(x, e), format(self.function(x), e))
-		l = ret.split('\n')[0]
+			body += "{}\t{}\t{}\n".format(i, format(x, e), format(self.function(x), e))
+		
+		sep = ""
+		head = ""
+		h = 'i', "xi", "f(xi)"
+		l = body.split('\n')[0].split('\t')
+		for i, s in enumerate(l):
+			head += h[i] + ' '*(len(s) - len(h[i])) + '\t'
+			sep += '-'*(len(s) + 4)
+		head += '\n'; sep += '\n'
 
-		return "i\txi" + ' '*l[2:].find('\t') + "\tf(xi)\n" +\
-			 '-'*(8+len(l)) + '\n' + ret + "Approximated solution: {}\n".format(x)
+		return head + sep + body + sep + \
+			"Approximated solution: {}\n".format(format(x, e)) +\
+			"Error evaluation: {:.3e}\n".format(self.error())
 
 	def __setattr__(self, name, value):
 		if name == "function":
@@ -76,13 +85,23 @@ class Bisection(Solver):
 			return type(self).__name__ + " instance"
 
 		e = ".{}f".format(ceil(-log(self.epsilon, 10)))
-		ret = '\t'.join(('i', "ai", "bi", "f(xi)", '\n'))
+		body = ""
 		for i, x in enumerate(self.progression):
 			m = self._mid(*x)
-			ret += "{}\t{}\t{}\t{}\n".format(i, format(x[0], e), format(x[1], e), format(self.function(m), e))
-		ret += "Approximated solution: {}\n".format(m)
+			body += "{}\t{}\t{}\t{}\n".format(i, format(x[0], e), format(x[1], e), format(self.function(m), e))
+		
+		sep = ""
+		head = ""
+		l = body.split('\n')[0].split('\t')
+		h = 'i', "ai", "bi", "f(xi)"
+		for i, s in enumerate(l):
+			head += h[i] + ' '*(len(s) - len(h[i])) + '\t'
+			sep += '-'*(len(s) + 4)
+		head += '\n'; sep += '\n'
 
-		return ret
+		return head + sep + body + sep + \
+			"Approximated solution: {}\n".format(format(m, e)) +\
+			"Error evaluation: {:.3e}\n".format(self.error())
 
 	def _mid(self, a, b):
 		return (a+b)/2
@@ -92,7 +111,7 @@ class Bisection(Solver):
 		a, b = self.progression[-1]
 
 		for i in range(len(self.progression), self.max_iteration):
-			if abs(b - a) < self.epsilon:
+			if abs(b - a) < self.epsilon or abs(self.function(self._mid(a, b))) < self.tolerance:
 				break
 
 			y = f(a), f(b)
@@ -174,9 +193,8 @@ class FixedPoint(Solver):
 			try:
 				x = self.function(self.progression[-1])
 			except ValueError:
-				message = "x = {}, math domain error! The sequence Xn+1 = f(Xn) diverges\n".format(x)
-				message += "Try with another starting point :\n method.progression = [x0]"
-				raise Exception(message)
+				raise Exception("x = {}, math domain error! The sequence Xn+1 = f(Xn) diverges\n\
+					Try with another starting point :\n method.progression = [x0]".format(x))
 
 			if abs(x - self.progression[-1]) < self.epsilon:
 				break
