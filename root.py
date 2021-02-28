@@ -77,7 +77,7 @@ class Bisection(Solver):
 		if f(a)*f(b) > 0:
 			raise Exception("There is no solution for the equation f(x) = 0 in the interval [{}, {}]".format(a, b))
 
-		Solver.__init__(self, f, max_iteration, tolerance)
+		super().__init__(f, max_iteration, tolerance)
 		self.progression = [(a, b)]
 
 	def __str__(self):
@@ -140,7 +140,7 @@ class Lagrange(Bisection):
 	""" Variant of the bisection method """
 
 	def __init__(self, f, a, b, max_iteration = 100, tolerance = 1e-9):
-		Bisection.__init__(self, f, a, b, max_iteration, tolerance)
+		super().__init__(f, a, b, max_iteration, tolerance)
 
 	def _mid(self, a, b):
 		f = self.function
@@ -156,7 +156,7 @@ class Descartes(Solver):
 		 - a, b : two abscissas forming the interval [a; b] where the solution should be
 		"""
 
-		Solver.__init__(self, f, max_iteration, tolerance)
+		super().__init__(f, max_iteration, tolerance)
 		self.progression = [a, b]
 
 	def compute(self):
@@ -185,7 +185,7 @@ class FixedPoint(Solver):
 		 - starting point x0
 		"""
 
-		Solver.__init__(self, f, max_iteration, tolerance)
+		super().__init__(f, max_iteration, tolerance)
 		self.progression = [x0]
 
 	def compute(self):
@@ -225,7 +225,7 @@ class Newton(Solver):
 		 - starting point x0
 		"""
 
-		Solver.__init__(self, f, max_iteration, tolerance)
+		super().__init__(f, max_iteration, tolerance)
 		self.derivative = df
 		self.progression = [x0]
 
